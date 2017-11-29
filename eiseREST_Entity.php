@@ -45,16 +45,26 @@ public function get( $request ){
 
 }
 
-public function put(){}
+public function put( $query ){
+	throw new eiseRESTException("PUT is not allowed for entity: {$this->conf['name']}", 403, $e, $this->rest);
+}
 
-public function post(){}
+public function post( $query ){
+	throw new eiseRESTException("POST is not allowed for entity: {$this->conf['name']}", 403, $e, $this->rest);
+}
 
-public function delete(){}
+public function delete( $query ){
+	throw new eiseRESTException("DELETE is not allowed for entity: {$this->conf['name']}", 403, $e, $this->rest);
+}
+
+public function options( $query ){
+	throw new eiseRESTException("OPTIONS not found for entity: {$this->conf['name']}", 404, $e, $this->rest);
+}
 
 
-protected function get_single_entry( $id ){ return array(); }
+protected function get_single_entry( $id ){ throw new eiseRESTException("GET is not allowed for entity: {$this->conf['name']}", 403, $e, $this->rest); }
 
-protected function execute_query( $query ){ return array(); }
+protected function execute_query( $query ){ throw new eiseRESTException("PUT is not allowed for entity: {$this->conf['name']}", 403, $e, $this->rest); }
 
 }
 

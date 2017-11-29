@@ -8,6 +8,7 @@ protected static $defaultConf = array(
 
 	'error500OnException' => true
 	, 'Content-Type' => 'application/json'
+	, 'root_directory' => '/'
 
 	, 'debug' => false
 
@@ -71,6 +72,9 @@ public function parse_uri(){
 	$basedir = pathinfo($_SERVER['SCRIPT_NAME'], PATHINFO_DIRNAME);
 	$aURI = explode('?', preg_replace('/^'.preg_quote($basedir, '/').'/i', '', $_SERVER['REQUEST_URI']));
 	$dirURI = $aURI[0];
+	foreach((array)$this->conf['root_directory'] as $root_dir){
+		$dirURI = preg_replace('/^'.preg_quote($this->conf['root_directory'], '/').'/i', '', $dirURI);
+	}
 	$dirURI = trim($dirURI, '/');
 
 	$aURI = explode('/', $dirURI);
@@ -81,7 +85,6 @@ public function parse_uri(){
 
 		$aObj = array(
 			'entity'=>$ent
-			
 		);
 
 		if(is_a($this->entities[$ent], 'eiseREST_Entity')){
@@ -139,17 +142,16 @@ public function execute( &$request = null ){
 			break;
 		case 'POST':
 			$return = $o->post( $request );
-			self::output( 200, $data , $this->conf , $o );
+			self::output( 201, $return , $this->conf , $o );
 		case 'PUT':
 			$return = $o->put( $request );
-			self::output( 200, $data , $this->conf , $o );
+			self::output( 204, null , $this->conf , $o );
 		case 'DELETE':
 			$return = $o->delete( $request );
-			self::output( 200, $data , $this->conf , $o );
-			break;
+			self::output( 204, null , $this->conf , $o );
 		case 'OPTIONS':
 			$return = $o->options( $request );
-			self::output( 200, $data , $this->conf , $o );
+			self::output( 200, $return , $this->conf , $o );
 		default:
 			throw new eiseRESTException('Unknown method', 500, null, $this);
 
