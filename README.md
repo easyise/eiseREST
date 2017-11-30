@@ -72,7 +72,6 @@ Some part of "server" context in NGINX config under Debian Linux with PHP runnin
 ```
    # API
    location ~ ^(?<sys_path>/.*)/api(?P<path_info>/.+)$ {
-        #try_files $uri $uri/ /nlogjc/api/index.php?$args;
          set $api_handler $sys_path/api/index.php;
          try_files $api_handler =404;
          include fastcgi_params;
