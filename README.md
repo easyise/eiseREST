@@ -25,10 +25,12 @@ You need to create your own classes for entity "employee" and entity "vacation".
 
 ```
 class restEmployee extends eiseREST_Entity { 
-  function __construct(parent::__construct( $rest, array('name'=>'employee'); /** + other stuff */ } 
+  function __construct(parent::__construct( $rest, array('name'=>'employee'); }
+  /** + other stuff */
 }
 class restVacation extends eiseREST_Entity { 
-  function __construct(parent::__construct( $rest, array('name'=>'vacation'); /** + other stuff */ } 
+  function __construct(parent::__construct( $rest, array('name'=>'vacation'); }
+  /** + other stuff */ 
 }
 ```
 
