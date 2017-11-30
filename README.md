@@ -71,8 +71,8 @@ To do:
 Some part of "server" context in NGINX config under Debian Linux with PHP running as PHP-FPM via sockets may look like this:
 ```
    # API
-   location ~ ^(?<sys_path>/.*)/api(?P<path_info>/.+)$ {
-         set $api_handler $sys_path/api/index.php;
+   location ~ ^(?<sys_path>/.*)api(?P<path_info>/.+)$ {
+         set $api_handler "${sys_path}api/index.php";
          try_files $api_handler =404;
          include fastcgi_params;
          fastcgi_param SCRIPT_FILENAME $document_root$api_handler;
