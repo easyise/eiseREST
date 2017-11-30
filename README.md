@@ -24,6 +24,8 @@ http://yoursite.com/api/employee/John_Doe/vacation
 You need to create your own classes for entity "employee" and entity "vacation". These classes should be based on eiseREST_Entity class. It has methods `get()`, `post()`, `put()`, `delete()` and `options()` that handle corresponding HTTP methods. You can override these methods with your own code (by default they throw an error). `get()` and `post()` methods should return PHP array that will be directly converted to JSON.
 
 ```
+include 'dist/eiseREST/eiseREST.php';
+
 class restEmployee extends eiseREST_Entity { 
   function __construct(parent::__construct( $rest, array('name'=>'employee'); }
   /** + other stuff */
