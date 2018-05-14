@@ -54,6 +54,38 @@ public function registerEntity($entity){
 
 public function authenticate(){
 
+	if( count(array_intersect(array('auth_keys', 'auth_table'), array_keys($this->conf)))==0 )
+		return true;
+
+	if (!isset($_SERVER['PHP_AUTH_USER'])) {
+	    header("WWW-Authenticate: Basic realm=\"{$this->conf['name']}\"");
+	    header('HTTP/1.0 401 Unauthorized');
+	    echo "Only authorized access permitted to the {$this->conf['name']}";
+	    exit;
+	} else {
+	    if(isset($this->conf['auth_keys'])){
+	    	$auth = false;
+	    	if($this->conf['auth_keys'][0])
+		    	foreach ($this->conf['auth_keys'] as $keypair) {
+		    		if($keypair[$_SERVER['PHP_AUTH_USER']] == md5($_SERVER['PHP_AUTH_PW'])){
+		    			$auth = true;
+		    			break;
+		    		}
+		    	}
+		    else
+		    	if($this->conf['auth_keys'][$_SERVER['PHP_AUTH_USER']]==md5($_SERVER['PHP_AUTH_PW']))
+		    		$auth = true;
+		    if(!$auth){
+		    	header("WWW-Authenticate: Basic realm=\"{$this->conf['name']}\"");
+		    	header('HTTP/1.0 401 Unauthorized');
+		    	echo "Access to the {$this->conf['name']} is denied for user {$_SERVER['PHP_AUTH_USER']}";
+		    	exit;
+		    }
+	    }
+	}
+
+	
+
 }
 
 public function parse_request(){
