@@ -54,7 +54,14 @@ public function registerEntity($entity){
 
 public function authenticate(){
 
-	if( count(array_intersect(array('auth_keys', 'auth_table'), array_keys($this->conf)))==0 )
+	$apiConf  = $this->conf;
+	$rootEntityConf = $this->requestHierarchy['entityObject']->conf;
+
+	if( count(array_intersect(array('auth_keys', 'auth_table'), array_merge(
+			array_keys($apiConf)
+			, array_keys($rootEntityConf)
+		)
+		))==0 )
 		return true;
 
 	if (!isset($_SERVER['PHP_AUTH_USER'])) {
@@ -63,17 +70,18 @@ public function authenticate(){
 	    echo "Only authorized access permitted to the {$this->conf['name']}";
 	    exit;
 	} else {
-	    if(isset($this->conf['auth_keys'])){
+		$keys = (isset($rootEntityConf['auth_keys']) ? $rootEntityConf['auth_keys'] : $apiConf['auth_keys']);
+	    if($keys){
 	    	$auth = false;
-	    	if($this->conf['auth_keys'][0])
-		    	foreach ($this->conf['auth_keys'] as $keypair) {
+	    	if($keys[0])
+		    	foreach ($keys as $keypair) {
 		    		if($keypair[$_SERVER['PHP_AUTH_USER']] == md5($_SERVER['PHP_AUTH_PW'])){
 		    			$auth = true;
 		    			break;
 		    		}
 		    	}
 		    else
-		    	if($this->conf['auth_keys'][$_SERVER['PHP_AUTH_USER']]==md5($_SERVER['PHP_AUTH_PW']))
+		    	if($keys[$_SERVER['PHP_AUTH_USER']]==md5($_SERVER['PHP_AUTH_PW']))
 		    		$auth = true;
 		    if(!$auth){
 		    	header("WWW-Authenticate: Basic realm=\"{$this->conf['name']}\"");
@@ -83,9 +91,6 @@ public function authenticate(){
 		    }
 	    }
 	}
-
-	
-
 }
 
 public function parse_request(){
@@ -167,6 +172,7 @@ public function execute( &$request = null ){
 			$full_data = array_merge((array)$request['parent_data'], (array)$data);
 			if($request['next']){
 				$request['next']['parent_data'] = $full_data;
+				$request['next']['parent_entity'] = $o;
 				$this->execute( $request['next'] );
 			}
 			else
@@ -177,7 +183,7 @@ public function execute( &$request = null ){
 			self::output( 201, $return , $this->conf , $o );
 		case 'PUT':
 			$return = $o->put( $request );
-			self::output( 204, null , $this->conf , $o );
+			self::output( 204, $return , $this->conf , $o );
 		case 'DELETE':
 			$return = $o->delete( $request );
 			self::output( 204, null , $this->conf , $o );
@@ -197,8 +203,11 @@ public function execute( &$request = null ){
 
 public static function output( $code, $data, $conf=array() , $oEntity = null){
 
+	#echo ("{$_SERVER['SERVER_PROTOCOL']} {$code} {$data}");die();
+
 	if($code!==200)
 		header("{$_SERVER['SERVER_PROTOCOL']} {$code} {$data}");
+
 
 	header('Access-Control-Allow-Origin: '.($code!==200 
 		? (
