@@ -62,9 +62,9 @@ public function options( $query ){
 }
 
 
-protected function get_single_entry( $id ){ throw new eiseRESTException("GET is not allowed for entity: {$this->conf['name']}", 403, $e, $this->rest); }
+protected function get_single_entry( $id ){ throw new eiseRESTException("GET is not allowed for the entity: {$this->conf['name']}", 403, $e, $this->rest); }
 
-protected function execute_query( $query ){ throw new eiseRESTException("PUT is not allowed for entity: {$this->conf['name']}", 403, $e, $this->rest); }
+protected function execute_query( $query ){ throw new eiseRESTException("GET is not allowed for the entity: {$this->conf['name']}", 403, $e, $this->rest); }
 
 }
 
