@@ -109,8 +109,25 @@ public function parse_uri(){
 	$basedir = pathinfo($_SERVER['SCRIPT_NAME'], PATHINFO_DIRNAME);
 	$aURI = explode('?', preg_replace('/^'.preg_quote($basedir, '/').'/i', '', $_SERVER['REQUEST_URI']));
 	$dirURI = $aURI[0];
-	foreach((array)$this->conf['root_directory'] as $root_dir){
-		$dirURI = preg_replace('/^'.preg_quote($this->conf['root_directory'], '/').'/i', '', $dirURI);
+
+	$aPossibleRoots = [ $this->conf['root_directory'] ];
+	$aNamePrefixes = [];
+	foreach ($this->entities as $$entID => $ent) {
+		if($ent->conf['root_directory']){
+			$aPossibleRoots[] = $ent->conf['root_directory'];
+			if($ent->conf['name_prefix'])
+				$aNamePrefixes[$ent->conf['root_directory']] = $ent->conf['name_prefix'];
+		}
+	}
+
+	$name_prefix = '';
+	foreach($aPossibleRoots as $root_dir){
+		if ( preg_match('/^'.preg_quote($root_dir.'/', '/').'/', $dirURI) ) {
+			$dirURI = preg_replace('/^'.preg_quote($root_dir.'/', '/').'/i', '', $dirURI);
+			$name_prefix = $aNamePrefixes[$root_dir];
+			break;	
+		}
+		
 	}
 	$dirURI = trim($dirURI, '/');
 
@@ -118,7 +135,7 @@ public function parse_uri(){
 
 	for( $ix=0; $ix<count($aURI); $ix++ ){
 
-		$ent = $aURI[$ix];
+		$ent = ($name_prefix ? $name_prefix.'_' : '').strtoupper($aURI[$ix]);
 
 		$aObj = array(
 			'entity'=>$ent
