@@ -55,7 +55,7 @@ public function registerEntity($entity){
 public function authenticate(){
 
 	$apiConf  = $this->conf;
-	$rootEntityConf = $this->requestedEntities[0]['entityObject']->conf;
+	$rootEntityConf = (array)$this->requestedEntities[0]['entityObject']->conf;
 
 	if( count(array_intersect(array('auth_keys', 'auth_table'), array_merge(
 			array_keys($apiConf)
