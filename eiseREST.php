@@ -55,8 +55,8 @@ public function registerEntity($entity){
 public function authenticate(){
 
 	$apiConf  = $this->conf;
-	$rootEntityConf = $this->requestHierarchy['entityObject']->conf;
-	
+	$rootEntityConf = $this->requestedEntities[0]['entityObject']->conf;
+
 	if( count(array_intersect(array('auth_keys', 'auth_table'), array_merge(
 			array_keys($apiConf)
 			, array_keys($rootEntityConf)
@@ -160,24 +160,20 @@ public function parse_uri(){
 		}
 
 		$this->requestedEntities[] = $aObj;
+		
 
 	}
-
-	foreach($this->requestedEntities as $ix=>&$aObj){
-		$aObj['next'] = isset($this->requestedEntities[$ix+1]) ? $this->requestedEntities[$ix+1] : null;
-	}
-
-	$this->requestHierarchy = $this->requestedEntities[0];
 
 	return $this->requestedEntities;
 
 }
 
-public function execute( &$request = null ){
+public function execute( $request = null ){
 
-	$request = !$request ? $this->requestHierarchy : $request;
+	$request = !$request ? $this->requestedEntities[0] : $request;
 
 	$o = $request['entityObject'];
+	$ent = $request['entity'];
 
 	if(!is_a($o, 'eiseREST_Entity')){
 		throw new eiseRESTException('Entity '.$request['entity'].' not found', 404, null, $this);
@@ -187,10 +183,18 @@ public function execute( &$request = null ){
 		case 'GET':
 			$data = $o->get( $request );
 			$full_data = array_merge((array)$request['parent_data'], (array)$data);
-			if($request['next']){
-				$request['next']['parent_data'] = $full_data;
-				$request['next']['parent_entity'] = $o;
-				$this->execute( $request['next'] );
+
+			$ix = null;
+			foreach ($this->requestedEntities as $key => $oEnt) {
+				if($oEnt['entity']==$ent){
+					$ix = $key;
+					break;
+				}
+			}
+			if($ix+1 !== count($this->requestedEntities)){
+				$this->requestedEntities[$ix+1]['parent_data'] = $full_data;
+				$this->requestedEntities[$ix+1]['parent_entity'] = $o;
+				$this->execute( $this->requestedEntities[$ix+1] );
 			}
 			else
 				self::output( 200, $data , $this->conf , $o);
