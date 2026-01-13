@@ -13,6 +13,22 @@ class eiseSQL extends mysqli{
 /**
  *  This array maps intra data types into MySQL data types
  */
+
+ 
+    public $flagProfiling = false;
+    public $dbhost;
+    public $dbuser;
+    public $dbpass;
+    public $dbname;
+    public $flagPersistent;
+    public $dbtype;
+    public $rs;
+    public $arrQueries = array();
+    public $arrResults = array();
+    public $arrMicroseconds = array();
+    public $arrBacktrace = array();
+    public $errornum;
+
     public $arrIntra2DBTypeMap = array(        
         "integer"=>'int(11)',
         "real"=>'decimal(16,4)',
@@ -75,8 +91,7 @@ class eiseSQL extends mysqli{
  */
     function __construct ($dbhost, $dbuser, $dbpass, $dbname, $flagPersistent=false)  {
         
-        @parent::__construct(($flagPersistent ? 'p:' : '').$dbhost, $dbuser, $dbpass, $dbname);
-        
+        parent::__construct(($flagPersistent ? 'p:' : '').$dbhost, $dbuser, $dbpass, $dbname);
         if ($this->connect_errno) {
             throw new eiseSQLException("Unable to connect to database: {$this->connect_error} ({$this->connect_errno})");
         }
@@ -298,7 +313,7 @@ class eiseSQL extends mysqli{
             $mysqli_result = $mysqli_result_or_query;
             $mysqli_result->data_seek(0);
             $arr = $mysqli_result->fetch_array();
-            return $arr[0];
+            return (is_array($arr) ? $arr[0] : null);
         } else if (is_string($mysqli_result_or_query)){
             $sql = $mysqli_result_or_query;
             $mysqli_result = $this->q($sql);
@@ -450,7 +465,7 @@ class eiseSQL extends mysqli{
           $arrRet[] = array('query'=>$this->arrQueries[$ii]
             , 'affected'=>$this->arrResults[$ii]['affected']
             , 'returned'=>$this->arrResults[$ii]['returned']
-            , 'backtrace'=>$this->backtrace[$ii]
+            , 'backtrace'=>$this->arrBacktrace[$ii]
             , 'time'=>$this->arrMicroseconds[$ii]);
       }
       return $arrRet;
@@ -507,6 +522,8 @@ class eiseSQL extends mysqli{
         } else {
             $tableType = 'table';
         }
+        $arrKeys = array();
+        $pkType = '';
 
         
         $sqlCols = "SHOW FULL COLUMNS FROM `".$tblName."`";
@@ -592,7 +609,7 @@ class eiseSQL extends mysqli{
         
         //foreign key constraints
         $rwCreate = $oSQL->fetch_array($oSQL->do_query("SHOW CREATE TABLE `{$tblName}`"));
-        $strCreate = $rwCreate["Create Table"];
+        $strCreate = (isset($rwCreate["Create Table"]) ? $rwCreate["Create Table"] : (isset($rwCreate["Create View"]) ? $rwCreate["Create View"] : ""));
         $arrCreate = explode("\n", $strCreate);$arrCreateLen = count($arrCreate);
         for($i=0;$i<$arrCreateLen;$i++){
             // CONSTRAINT `FK_vhcTypeID` FOREIGN KEY (`vhcTypeID`) REFERENCES `tbl_vehicle_type` (`vhtID`)

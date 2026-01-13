@@ -53,7 +53,7 @@ public function __construct( $conf = array() ){
 				if(!$tblName)
 					continue;
 
-				if(!$this->entities[$tbl])
+				if(!isset($this->entities[$tbl]))
 					$this->registerEntityByTable($tblName, $prfx);
 
 			}
