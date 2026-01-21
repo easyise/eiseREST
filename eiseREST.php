@@ -73,7 +73,7 @@ public function authenticate(){
 		$keys = (isset($rootEntityConf['auth_keys']) ? $rootEntityConf['auth_keys'] : $apiConf['auth_keys']);
 	    if($keys){
 	    	$auth = false;
-	    	if($keys[0])
+	    	if(isset($keys[0]))
 		    	foreach ($keys as $keypair) {
 		    		if($keypair[$_SERVER['PHP_AUTH_USER']] == md5($_SERVER['PHP_AUTH_PW'])){
 		    			$auth = true;
@@ -81,7 +81,7 @@ public function authenticate(){
 		    		}
 		    	}
 		    else
-		    	if($keys[$_SERVER['PHP_AUTH_USER']]==md5($_SERVER['PHP_AUTH_PW']))
+		    	if(isset($keys[$_SERVER['PHP_AUTH_USER']]) && $keys[$_SERVER['PHP_AUTH_USER']]==md5($_SERVER['PHP_AUTH_PW']))
 		    		$auth = true;
 		    if(!$auth){
 		    	header("WWW-Authenticate: Basic realm=\"{$this->conf['name']}\"");
@@ -112,10 +112,10 @@ public function parse_uri(){
 
 	$aPossibleRoots = [ $this->conf['root_directory'] ];
 	$aNamePrefixes = [];
-	foreach ($this->entities as $$entID => $ent) {
-		if($ent->conf['root_directory']){
+	foreach ($this->entities as $entID => $ent) {
+		if(!empty($ent->conf['root_directory'])){
 			$aPossibleRoots[] = $ent->conf['root_directory'];
-			if($ent->conf['name_prefix'])
+			if(!empty($ent->conf['name_prefix']))
 				$aNamePrefixes[$ent->conf['root_directory']] = $ent->conf['name_prefix'];
 		}
 	}
@@ -124,7 +124,7 @@ public function parse_uri(){
 	foreach($aPossibleRoots as $root_dir){
 		if ( preg_match('/^'.preg_quote($root_dir.'/', '/').'/', $dirURI) ) {
 			$dirURI = preg_replace('/^'.preg_quote($root_dir.'/', '/').'/i', '', $dirURI);
-			$name_prefix = $aNamePrefixes[$root_dir];
+			$name_prefix = (isset($aNamePrefixes[$root_dir]) ? $aNamePrefixes[$root_dir] : '');
 			break;	
 		}
 		
@@ -141,7 +141,7 @@ public function parse_uri(){
 			'entity'=>$ent
 		);
 
-		if(is_a($this->entities[$ent], 'eiseREST_Entity')){
+		if(isset($this->entities[$ent]) && is_a($this->entities[$ent], 'eiseREST_Entity')){
 			$aObj['entityObject'] = $this->entities[$ent];
 		}
 
@@ -182,7 +182,7 @@ public function execute( $request = null ){
 	switch($request['method']){
 		case 'GET':
 			$data = $o->get( $request );
-			$full_data = array_merge((array)$request['parent_data'], (array)$data);
+			$full_data = array_merge((isset($request['parent_data']) ? (array)$request['parent_data'] : array()), (array)$data);
 
 			$ix = null;
 			foreach ($this->requestedEntities as $key => $oEnt) {
