@@ -77,7 +77,7 @@ private function registerEntityByTable($tbl, $prfx){
 
 	$tbl_no_prefix = ($prfx ? preg_replace('/^'.preg_quote($prfx,'/').'/', '', $tbl) :  $tbl);
 
-	$this->entities[$tbl_no_prefix] = new eiseRESTdb_Entity( $this, array('table'=>$tbl) );
+	$this->entities[strtoupper($tbl_no_prefix)] = new eiseRESTdb_Entity( $this, array('table'=>$tbl) );
 
 }
 
